@@ -14,6 +14,10 @@
 }
 html{scroll-behavior:smooth;}
 body{background:var(--bg);color:var(--txt);font-family:'DM Mono',monospace;font-weight:300;line-height:1.6;overflow-x:hidden;cursor:none;}
+
+/* BATMAN BACKGROUND */
+#batcanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+nav,section,.mwrap,#skills,footer{position:relative;z-index:1;}
 a,button,input,textarea{cursor:none;}
 
 /* CURSOR */
@@ -103,7 +107,7 @@ h2{font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3rem);font-weig
 
 .fgroup{display:flex;flex-direction:column;gap:.45rem;margin-bottom:1.3rem;}
 .flabel{font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--mut);}
-.finput,.ftarea{background:var(--sur);border:1px solid var(--bor);color:var(--txt);font-family:'DM Mono',monospace;font-size:.83rem;padding:.9rem 1.1rem;outline:none;transition:border-color .2s;resize:none;}
+.finput,.ftarea{background:var(--sur);border:1px solid var(--bor);color:var(--txt);font-family:'DM Mono',monospace;font-size:.83rem;padding:.9rem 1.1rem;outline:none;transition:border-color .2s;resize:none;width:100%;}
 .finput:focus,.ftarea:focus{border-color:rgba(200,240,96,.4);}
 .ftarea{min-height:130px;}
 .fsub{background:transparent;border:1px solid var(--grn);color:var(--grn);padding:.9rem 2rem;font-family:'DM Mono',monospace;font-size:.78rem;letter-spacing:.15em;text-transform:uppercase;transition:background .2s,color .2s;}
@@ -141,6 +145,7 @@ footer{padding:1.8rem 4rem;border-top:1px solid var(--bor);display:flex;justify-
 </head>
 <body>
 
+<canvas id="batcanvas"></canvas>
 <div id="cdot"></div>
 <div id="cring"></div>
 
@@ -240,8 +245,8 @@ footer{padding:1.8rem 4rem;border-top:1px solid var(--bor);display:flex;justify-
     <div class="sec-label">Get in touch</div>
     <div class="ctitle">Let's build<br>something <em>great.</em></div>
     <p class="cdesc">Whether you have a project in mind, a job opportunity, or just want to say hello — my inbox is open.</p>
-    <a class="clink" href="mailto:yashwanthrachamalla2007_at_gmail.com">
-      <span class="cicon">✉</span> yashwanthrachamalla2007 [at] gmail.com
+    <a class="clink" href="mailto:yashwanthrachamalla2007@gmail.com">
+      <span class="cicon">✉</span> yashwanthrachamalla2007@gmail.com
     </a>
     <a class="clink" href="tel:+917702216833">
       <span class="cicon">✆</span> +91 7702216833
@@ -251,21 +256,21 @@ footer{padding:1.8rem 4rem;border-top:1px solid var(--bor);display:flex;justify-
     </a>
   </div>
   <div class="rev d1">
-    <form id="cform">
+    <div id="cform">
       <div class="fgroup">
         <label class="flabel">Name</label>
-        <input class="finput" type="text" placeholder="Your name" required/>
+        <input class="finput" id="fname" type="text" placeholder="Your name"/>
       </div>
       <div class="fgroup">
         <label class="flabel">Email</label>
-        <input class="finput" type="email" placeholder="your@email.com" required/>
+        <input class="finput" id="femail" type="email" placeholder="your@email.com"/>
       </div>
       <div class="fgroup">
         <label class="flabel">Message</label>
-        <textarea class="ftarea" placeholder="Tell me about your project..." required></textarea>
+        <textarea class="ftarea" id="fmsg" placeholder="Tell me about your project..."></textarea>
       </div>
-      <button type="submit" class="fsub" id="fsub">Send Message</button>
-    </form>
+      <button class="fsub" id="fsub" onclick="handleSubmit()">Send Message</button>
+    </div>
   </div>
 </section>
 
@@ -340,14 +345,221 @@ var obs=new IntersectionObserver(function(entries){
 },{threshold:0.1});
 document.querySelectorAll('.rev').forEach(function(el){obs.observe(el);});
 
+// Marvel Background — Iron Man arc reactor + energy particles + web threads
+(function(){
+  var c=document.getElementById('batcanvas');
+  var ctx=c.getContext('2d');
+  var W,H;
+
+  function resize(){W=c.width=window.innerWidth;H=c.height=window.innerHeight;}
+  resize();
+  window.addEventListener('resize',resize);
+
+  // --- Arc Reactor ---
+  function drawReactor(cx,cy,r,t,alpha){
+    ctx.save();
+    ctx.globalAlpha=alpha;
+    ctx.translate(cx,cy);
+
+    // outer glow
+    var og=ctx.createRadialGradient(0,0,r*0.5,0,0,r*2.2);
+    og.addColorStop(0,'rgba(200,240,96,0.13)');
+    og.addColorStop(0.5,'rgba(100,200,255,0.06)');
+    og.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=og;
+    ctx.beginPath();ctx.arc(0,0,r*2.2,0,Math.PI*2);ctx.fill();
+
+    // spinning ring segments
+    for(var i=0;i<8;i++){
+      var a=t+(i/8)*Math.PI*2;
+      ctx.save();
+      ctx.rotate(a);
+      ctx.strokeStyle='rgba(200,240,96,0.5)';
+      ctx.lineWidth=1.5;
+      ctx.shadowColor='#c8f060';
+      ctx.shadowBlur=8;
+      ctx.beginPath();
+      ctx.arc(0,0,r*0.78,0.1,0.62);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // inner spinning ring (counter)
+    for(var i=0;i<6;i++){
+      var a=-t*1.4+(i/6)*Math.PI*2;
+      ctx.save();
+      ctx.rotate(a);
+      ctx.strokeStyle='rgba(100,220,255,0.45)';
+      ctx.lineWidth=1.2;
+      ctx.shadowColor='#60d8ff';
+      ctx.shadowBlur=6;
+      ctx.beginPath();
+      ctx.arc(0,0,r*0.52,0.1,0.9);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // core glow
+    var cg=ctx.createRadialGradient(0,0,0,0,0,r*0.38);
+    cg.addColorStop(0,'rgba(220,255,200,0.9)');
+    cg.addColorStop(0.4,'rgba(100,220,255,0.6)');
+    cg.addColorStop(1,'rgba(100,220,255,0)');
+    ctx.fillStyle=cg;
+    ctx.beginPath();ctx.arc(0,0,r*0.38,0,Math.PI*2);ctx.fill();
+
+    // triangle in center (arc reactor shape)
+    ctx.save();
+    ctx.rotate(t*0.5);
+    ctx.strokeStyle='rgba(200,240,96,0.7)';
+    ctx.lineWidth=1.5;
+    ctx.shadowColor='#c8f060';
+    ctx.shadowBlur=10;
+    ctx.beginPath();
+    for(var i=0;i<3;i++){
+      var a=(i/3)*Math.PI*2-Math.PI/2;
+      i===0?ctx.moveTo(Math.cos(a)*r*0.28,Math.sin(a)*r*0.28)
+           :ctx.lineTo(Math.cos(a)*r*0.28,Math.sin(a)*r*0.28);
+    }
+    ctx.closePath();ctx.stroke();
+    ctx.restore();
+
+    ctx.restore();
+  }
+
+  // --- Spider Web ---
+  function drawWeb(cx,cy,maxR,alpha){
+    ctx.save();
+    ctx.globalAlpha=alpha;
+    ctx.strokeStyle='rgba(200,240,96,0.18)';
+    ctx.lineWidth=0.6;
+    var rings=5,spokes=8;
+    for(var r=1;r<=rings;r++){
+      ctx.beginPath();
+      for(var s=0;s<=spokes;s++){
+        var a=(s/spokes)*Math.PI*2;
+        var rad=(r/rings)*maxR;
+        s===0?ctx.moveTo(cx+Math.cos(a)*rad,cy+Math.sin(a)*rad)
+             :ctx.lineTo(cx+Math.cos(a)*rad,cy+Math.sin(a)*rad);
+      }
+      ctx.closePath();ctx.stroke();
+    }
+    for(var s=0;s<spokes;s++){
+      var a=(s/spokes)*Math.PI*2;
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.lineTo(cx+Math.cos(a)*maxR,cy+Math.sin(a)*maxR);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // --- Energy Particles ---
+  var particles=[];
+  for(var i=0;i<60;i++){
+    particles.push({
+      x:Math.random()*1920,y:Math.random()*1080,
+      vx:(Math.random()-.5)*0.5,vy:(Math.random()-.5)*0.5,
+      r:1+Math.random()*2.5,
+      life:Math.random()*Math.PI*2,
+      speed:0.01+Math.random()*0.02,
+      color:Math.random()>0.5?'rgba(200,240,96,':'rgba(100,210,255,'
+    });
+  }
+
+  // --- Infinity Stone orbiting particles ---
+  var stoneColors=['rgba(200,240,96,','rgba(100,200,255,','rgba(240,100,60,','rgba(180,80,240,','rgba(240,200,40,','rgba(80,240,160,'];
+  var stones=stoneColors.map(function(col,i){
+    return{col:col,angle:(i/6)*Math.PI*2,dist:90+i*8,size:3+Math.random()*2,speed:0.004+i*0.001};
+  });
+
+  var t=0;
+  function draw(){
+    t+=0.008;
+    ctx.clearRect(0,0,W,H);
+
+    // subtle red/gold gradient tint top
+    var tg=ctx.createLinearGradient(0,0,W,H*0.6);
+    tg.addColorStop(0,'rgba(180,30,10,0.04)');
+    tg.addColorStop(0.5,'rgba(200,130,10,0.03)');
+    tg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=tg;
+    ctx.fillRect(0,0,W,H);
+
+    // Spider webs — corners
+    drawWeb(0,0,180,0.25);
+    drawWeb(W,0,180,0.25);
+    drawWeb(0,H,150,0.18);
+    drawWeb(W,H,150,0.18);
+
+    // Arc Reactors
+    var r1x=W*0.5+Math.sin(t*0.12)*20, r1y=H*0.3+Math.cos(t*0.09)*15;
+    drawReactor(r1x,r1y,55,t,0.55);
+
+    // Small secondary reactor
+    var r2x=W*0.15+Math.sin(t*0.18)*10, r2y=H*0.65+Math.cos(t*0.14)*8;
+    drawReactor(r2x,r2y,28,t*1.2,0.2);
+    var r3x=W*0.85+Math.sin(t*0.16)*10, r3y=H*0.55+Math.cos(t*0.12)*8;
+    drawReactor(r3x,r3y,28,t*0.9,0.2);
+
+    // Infinity stones orbiting main reactor
+    stones.forEach(function(s){
+      s.angle+=s.speed;
+      var sx=r1x+Math.cos(s.angle)*s.dist;
+      var sy=r1y+Math.sin(s.angle)*s.dist;
+      ctx.save();
+      ctx.globalAlpha=0.55+Math.sin(s.angle*3)*0.15;
+      var sg=ctx.createRadialGradient(sx,sy,0,sx,sy,s.size*2.5);
+      sg.addColorStop(0,s.col+'0.9)');
+      sg.addColorStop(1,s.col+'0)');
+      ctx.fillStyle=sg;
+      ctx.shadowColor=s.col+'1)';
+      ctx.shadowBlur=10;
+      ctx.beginPath();ctx.arc(sx,sy,s.size,0,Math.PI*2);ctx.fill();
+      // orbit trail
+      ctx.globalAlpha=0.08;
+      ctx.strokeStyle=s.col+'0.5)';
+      ctx.lineWidth=0.8;
+      ctx.beginPath();ctx.arc(r1x,r1y,s.dist,0,Math.PI*2);ctx.stroke();
+      ctx.restore();
+    });
+
+    // Energy particles
+    particles.forEach(function(p){
+      p.life+=p.speed;
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0)p.x=W;if(p.x>W)p.x=0;
+      if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+      var a=0.15+Math.sin(p.life)*0.12;
+      ctx.save();
+      ctx.globalAlpha=a;
+      ctx.fillStyle=p.color+'0.8)';
+      ctx.shadowColor=p.color+'1)';
+      ctx.shadowBlur=6;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();
+      ctx.restore();
+    });
+
+    // Vignette
+    var vg=ctx.createRadialGradient(W/2,H/2,H*0.1,W/2,H/2,H*0.9);
+    vg.addColorStop(0,'rgba(10,10,8,0)');
+    vg.addColorStop(1,'rgba(10,10,8,0.78)');
+    ctx.fillStyle=vg;
+    ctx.fillRect(0,0,W,H);
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
 // Form
-document.getElementById('cform').addEventListener('submit',function(e){
-  e.preventDefault();
+function handleSubmit(){
   var b=document.getElementById('fsub');
   b.textContent='Sent ✓';b.style.background='var(--grn)';b.style.color='var(--bg)';
-  this.reset();
+  document.getElementById('fname').value='';
+  document.getElementById('femail').value='';
+  document.getElementById('fmsg').value='';
   setTimeout(function(){b.textContent='Send Message';b.style.background='';b.style.color='';},2800);
-});
+}
 </script>
 </body>
 </html>
